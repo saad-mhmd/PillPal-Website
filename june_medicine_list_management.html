@@ -1,0 +1,428 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="css/water.css">
+    <!-- <link rel="stylesheet" href="https://classless.de/classless.css"> -->
+    <style>
+        h1 {
+            text-align: center;
+        }
+
+        fieldset {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            width: 100%;
+            max-width: 600px;
+            /* Optional: Set max-width to limit the width of the fieldset */
+            margin: 0 auto;
+            /* Optional: Center the fieldset horizontally */
+        }
+
+        button {
+            flex: 1;
+        }
+
+        /* Overriding the table width */
+        table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        table th,
+        table td {
+            text-align: left;
+        }
+
+        label {
+            display: block;
+            /* margin-bottom: 5px; */
+        }
+
+        input {
+            width: 100%;
+            /* padding: 5px; */
+            /* border: 1px solid #ccc; */
+            /* border-radius: 3px; */
+            box-sizing: border-box;
+        }
+    </style>
+    <title>Medicine List Management</title>
+    <!-- Include the Firebase SDK -->
+    <script src="https://www.gstatic.com/firebasejs/9.19.1/firebase-app.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.19.1/firebase-storage.js"></script>
+</head>
+
+<body>
+    <iframe src="header.html" frameborder="0" width="100%" height="50px"></iframe>
+    <div style="max-width: 800px; margin: 0 auto;">
+        <h1>Medicine List Management</h1>
+        <hr>
+
+        <table>
+            <tbody>
+        
+                <tr>
+                    <td><label>Name (ID)</label> <input id="input1" type="text"></td>
+                    <td><label>Igredients</label> <input id="input2" type="text"></td>
+                </tr>
+                <tr>
+                </tr>
+                <tr>
+                    <td><label>Description</label> <textarea id="input3" name="description" rows="3" cols="102"></textarea></td>
+                </tr>
+                <tr>
+                </tr>
+                <tr>
+                    <td><label>Presentation</label> <input id="input4" type="text"></td>
+                    <td><label>Form</label> <input id="input5" type="text"></td>
+                </tr>
+                <tr>
+                </tr>
+                <tr>
+                    <td><label>Route</label> <input id="input6" type="text"></td>
+                    <td><label>Brand/Generic</label> <input id="input7" type="text"></td>
+                </tr>
+                <tr>
+                </tr>
+                <tr>
+                    <td><label>Subsidy Percentage</label> <input id="input8" type="text"></td>
+                    <td><label>Stratum</label> <input id="input9" type="text"></td>
+                </tr>
+                <tr>
+                </tr>
+                <tr>
+                    <td><label>ATC</label> <input id="input10" type="text"></td>
+                    <td> <label>Agent</label> <input id="input11" type="text"></td>
+                </tr>
+                <tr>
+                </tr>
+                <tr>
+                    <td><label>Code</label> <input id="input12" type="text"></td>
+                    <td><label>Registration Number</label> <input id="input13" type="text"></td>
+                </tr>
+                <tr>
+                </tr>
+                <tr>
+                    <td><label>Manufacturer</label> <input id="input14" type="text"></td>
+                    <td><label>Country</label> <input id="input15" type="text"></td>
+                </tr>
+            </tbody>
+        </table>
+    
+        <br>
+
+        <fieldset>
+            <legend>Database Operations</legend>
+            <button id="Insbtn">INSERT</button>
+            <button id="Selbtn">SELECT</button>
+            <button id="Updbtn">UPDATE</button>
+            <button id="Delbtn">DELETE</button>
+            <button id="Allbtn" style="display: none;">Show All</button>
+        </fieldset>
+    
+        <br>
+    </div>
+
+    <div>
+        <table id="medicine-table">
+            <thead>
+                <tr>
+                    <th>Name</th>
+                    <th>Igredients</th>
+                    <th>Description</th>
+                    <th>Presentation</th>
+                    <th>Form</th>
+                    <th>Route</th>
+                    <th>Brand/Generic</th>
+                    <th>Subsidy %</th>
+                    <th>Stratum</th>
+                    <th>ATC</th>
+                    <th>Agent</th>
+                    <th>Code</th>
+                    <th>Registration N.</th>
+                    <th>Manufacturer</th>
+                    <th>Country</th>
+                </tr>
+            </thead>
+            <tbody>
+            </tbody>
+        </table>
+    </div>
+
+
+    <!--------------------- IMPORT + CONFIGURATION --------------------->
+    <script type="module">
+        // Import the functions you need from the SDKs you need
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/9.19.1/firebase-app.js";
+        import { getAnalytics } from "https://www.gstatic.com/firebasejs/9.19.1/firebase-analytics.js";
+        // TODO: Add SDKs for Firebase products that you want to use
+        // https://firebase.google.com/docs/web/setup#available-libraries
+
+        // Your web app's Firebase configuration
+        // For Firebase JS SDK v7.20.0 and later, measurementId is optional
+        const firebaseConfig = {
+            apiKey: "AIzaSyA9kaWQP1YBdIDkZcGYG2Pfu83dAlQ9upo",
+            authDomain: "pillpal-v2.firebaseapp.com",
+            projectId: "pillpal-v2",
+            storageBucket: "pillpal-v2.appspot.com",
+            messagingSenderId: "508414555682",
+            appId: "1:508414555682:web:354f6ff4cf6f5998e1fc7b",
+            measurementId: "G-FJGT9W4D2H"
+        };
+
+        // Initialize Firebase
+        const app = initializeApp(firebaseConfig);
+        const analytics = getAnalytics(app);
+
+        import {
+            getFirestore, doc, getDoc, setDoc, collection, addDoc, updateDoc, deleteDoc, deleteField, getDocs
+        }
+            from "https://www.gstatic.com/firebasejs/9.19.1/firebase-firestore.js"
+
+        const db = getFirestore();
+
+        // --------------------- References ---------------------
+
+        let Input1 = document.getElementById("input1");
+        let Input2 = document.getElementById("input2");
+        let Input3 = document.getElementById("input3");
+        let Input4 = document.getElementById("input4");
+        let Input5 = document.getElementById("input5");
+        let Input6 = document.getElementById("input6");
+        let Input7 = document.getElementById("input7");
+        let Input8 = document.getElementById("input8");
+        let Input9 = document.getElementById("input9");
+        let Input10= document.getElementById("input10");
+        let Input11 = document.getElementById("input11");
+        let Input12 = document.getElementById("input12");
+        let Input13 = document.getElementById("input13");
+        let Input14 = document.getElementById("input14");
+        let Input15 = document.getElementById("input15");
+
+        let insBtn = document.getElementById("Insbtn");
+        let selBtn = document.getElementById("Selbtn");
+        let updBtn = document.getElementById("Updbtn");
+        let delBtn = document.getElementById("Delbtn");
+
+        let allBtn = document.getElementById("Allbtn")
+
+
+        // --------------------- Adding Document (Custom ID & Check if Exists) ---------------------
+
+        async function AddDocument_CustomID() {
+            const input1 = Input1.value.trim();
+            const input2 = Input2.value.trim();
+            const input3 = Input3.value.trim();
+            const input4 = Input4.value.trim();
+            const input5 = Input5.value.trim();
+            const input6 = Input6.value.trim();
+            const input7 = Input7.value.trim();
+            const input8 = Input8.value.trim();
+            const input9 = Input9.value.trim();
+            const input10 = Input10.value.trim();
+            const input11 = Input11.value.trim();
+            const input12 = Input12.value.trim();
+            const input13 = Input13.value.trim();
+            const input14 = Input14.value.trim();
+            const input15 = Input15.value.trim();
+            
+
+            if (!input1 || !input2 || !input3 || !input4 || !input5 || !input6 || !input7 || !input8 || !input9 || !input10 || !input11 || !input12 || !input13 || !input14 || !input15) {
+                alert("Please fill all the fields.");
+                return;
+            }
+
+            const ref = doc(db, "MT_MEDICINELIST", input1);
+
+            const docSnap = await getDoc(ref);
+
+            if (docSnap.exists()) {
+                alert("A document with this Name (ID) already exists.");
+            } else {
+                await setDoc(ref, {
+                    Name: input1,
+                    Igredients: input2,
+                    description: input3,
+                    Presentation: input4,
+                    Form: input5,
+                    Route: input6,
+                    Brand_Generic: input7,
+                    SubsidyPercentage: input8,
+                    Stratum: input9,
+                    ATC: input10,
+                    Agent: input11,
+                    Code: input12,
+                    RegistrationNumber: input13,
+                    Manufacturer: input14,
+                    Country: input15
+                })
+                    .then(() => {
+                        alert("Data added successfully.");
+                        console.log("input1Value:", input1);
+                        //send code to the image page
+                        const url = "inputs_with_image.html?input1Value=" + encodeURIComponent(input1);
+                        window.open(url, "_blank");
+                        GetAllDocuments();
+                    })
+                    .catch((error) => {
+                        alert("Unsuccessful operation, error: " + error);
+                    });
+            }
+        }
+
+        // --------------------- Getting Document ---------------------
+
+        async function GetADocument() {
+            var ref = doc(db, "MT_MEDICINELIST", Input1.value);
+            const docSnap = await getDoc(ref);
+
+            if (docSnap.exists()) {
+                Input2.value = docSnap.data().Igredients;
+                Input3.value = docSnap.data().description;
+                Input4.value = docSnap.data().Presentation;
+                Input5.value = docSnap.data().Form;
+                Input6.value = docSnap.data().Route;
+                Input7.value = docSnap.data().Brand_Generic;
+                Input8.value = docSnap.data().SubsidyPercentage;
+                Input9.value = docSnap.data().Stratum;
+                Input10.value = docSnap.data().ATC;
+                Input11.value = docSnap.data().Agent;
+                Input12.value = docSnap.data().Code;
+                Input13.value = docSnap.data().RegistrationNumber;
+                Input14.value = docSnap.data().Manufacturer;
+                Input15.value = docSnap.data().Country;
+            }
+            else {
+                alert("No such Document")
+            }
+        }
+
+        // --------------------- Update Document Data ---------------------
+
+        async function UpdateFieldsInADocument() {
+
+            const input1 = Input1.value.trim();
+            const input2 = Input2.value.trim();
+            const input3 = Input3.value.trim();
+            const input4 = Input4.value.trim();
+            const input5 = Input5.value.trim();
+            const input6 = Input6.value.trim();
+            const input7 = Input7.value.trim();
+            const input8 = Input8.value.trim();
+            const input9 = Input9.value.trim();
+            const input10 = Input10.value.trim();
+            const input11 = Input11.value.trim();
+            const input12 = Input12.value.trim();
+            const input13 = Input13.value.trim();
+            const input14 = Input14.value.trim();
+            const input15 = Input15.value.trim();
+
+            if (!input1 || !input2 || !input3 || !input4 || !input5 || !input6 || !input7 || !input8 || !input9 || !input10 || !input11 || !input12 || !input13 || !input14 || !input15) {
+                alert("Please provide all data to update the medicine info.");
+                return;
+            }
+
+            var ref = doc(db, "MT_MEDICINELIST", Input1.value);
+
+            await updateDoc(
+                ref, {
+                Igredients: Input2.value,
+                description: Input3.value,
+                Presentation: Input4.value,
+                Form: Input5.value,
+                Route: Input6.value,
+                Brand_Generic: Input7.value,
+                SubsidyPercentage: Input8.value,
+                Stratum: Input9.value,
+                ATC: Input10.value,
+                Agent: Input11.value,
+                Code: Input12.value,
+                RegistrationNumber: Input13.value,
+                Manufacturer: Input14.value,
+                Country: Input15.value
+            })
+                .then(() => {
+                    alert("data updated successfully");
+                    GetAllDocuments();
+                })
+                .catch((error) => {
+                    alert("Unsuccessful operation, error: " + error);
+                });
+        }
+
+        // --------------------- Deleting Document ---------------------
+
+        async function DeleteDocument() {
+            var ref = doc(db, "MT_MEDICINELIST", Input1.value);
+            const docSnap = await getDoc(ref);
+
+            if (!docSnap.exists()) {
+                alert("Document doesn't exist");
+                return;
+            }
+            await deleteDoc(ref)
+                .then(() => {
+                    alert("data deleted successfully");
+                    GetAllDocuments();
+                })
+                .catch((error) => {
+                    alert("Unsuccessful operation, error: " + error);
+                });
+        }
+
+        // --------------------- Get All Documents ---------------------
+
+        async function GetAllDocuments() {
+            const querySnapshot = await getDocs(collection(db, "MT_MEDICINELIST"));
+
+            const tableBody = document.querySelector("#medicine-table tbody");
+
+            // Remove existing rows from the table
+            while (tableBody.firstChild) {
+                tableBody.removeChild(tableBody.firstChild);
+            }
+
+            querySnapshot.forEach((doc) => {
+                const data = doc.data();
+                const row = document.createElement("tr");
+                row.innerHTML = `
+                                <td>${data.Name}</td>
+                                <td>${data.Igredients}</td>
+                                <td>${data.description}</td>
+                                <td>${data.Presentation}</td>
+                                <td>${data.Form}</td>
+                                <td>${data.Route}</td>
+                                <td>${data.Brand_Generic}</td>
+                                <td>${data.SubsidyPercentage}</td>
+                                <td>${data.Stratum}</td>
+                                <td>${data.ATC}</td>
+                                <td>${data.Agent}</td>
+                                <td>${data.Code}</td>
+                                <td>${data.RegistrationNumber}</td>
+                                <td>${data.Manufacturer}</td>
+                                <td>${data.Country}</td>
+                                `;
+                tableBody.appendChild(row);
+            });
+        }
+
+        // --------------------- Assign Events To Btns ---------------------
+
+        insBtn.addEventListener("click", AddDocument_CustomID);
+        selBtn.addEventListener("click", GetADocument);
+        updBtn.addEventListener("click", UpdateFieldsInADocument);
+        delBtn.addEventListener("click", DeleteDocument);
+
+        allBtn.addEventListener("click", GetAllDocuments);
+        window.addEventListener("load", GetAllDocuments);
+
+    </script>
+
+</body>
+
+</html>

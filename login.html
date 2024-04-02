@@ -1,0 +1,196 @@
+<!DOCTYPE html>
+<html lang="en" dir="ltr">
+
+<head>
+   <meta charset="utf-8">
+   <title>Login/Registration</title>
+   <link rel="stylesheet" href="css/style_login.css">
+   <meta name="viewport" content="width=device-width, initial-scale=1.0">
+</head>
+
+<body>
+   <div>
+      <ul>
+         <li><a href="#" id="logout" style="display: none;">Log Out</a></li>
+      </ul>
+   </div>
+   <div class="wrapper">
+      <div class="title-text">
+         <div class="title login">
+            Login Form
+         </div>
+         <div class="title signup">
+            Signup Form
+         </div>
+      </div>
+      <div class="form-container">
+         <div class="slide-controls">
+            <input type="radio" name="slide" id="login" checked>
+            <input type="radio" name="slide" id="signup">
+            <label for="login" class="slide login">Login</label>
+            <label for="signup" class="slide signup">Signup</label>
+            <div class="slider-tab"></div>
+         </div>
+         <div class="form-inner">
+            <form action="#" class="login" name="login_form" id="login_form" method="post"
+               enctype="multipart/form-data">
+               <div class="field">
+                  <input type="text" name="login_email" id="login_email" placeholder="Email Address" required>
+               </div>
+               <div class="field">
+                  <input type="password" name="login_password" id="login_password" placeholder="Password" required>
+               </div>
+               <div class="pass-link">
+                  <a href="#">Forgot password?</a>
+               </div>
+               <div class="field btn">
+                  <div class="btn-layer"></div>
+                  <input type="submit" id="signin" name="signin" value="Login">
+               </div>
+               <div class="signup-link">
+                  No account? <a href="">Signup now</a>
+               </div>
+            </form>
+
+            <form action="#" class="signup" name="registration_form" id="registration_form" method="post"
+               enctype="multipart/form-data">
+               <div>
+                  <div class="field">
+                     <input type="text" name="email" id="email" placeholder="Email Address" required>
+                  </div>
+                  <div class="field">
+                     <input type="password" name="password" id="password" placeholder="Password" required>
+                  </div>
+                  <div class="field">
+                     <input type="password" name="confirm_password" id="confirm_password"
+                        placeholder="Confirm pass - not working currently" required>
+                  </div>
+                  <div class="field btn">
+                     <div class="btn-layer"></div>
+                     <input type="submit" id="register" name="register" value="Signup">
+                  </div>
+               </div>
+
+
+               <!-- test -->
+
+            </form>
+         </div>
+      </div>
+   </div>
+   <script>
+      const loginText = document.querySelector(".title-text .login");
+      const loginForm = document.querySelector("form.login");
+      const loginBtn = document.querySelector("label.login");
+      const signupBtn = document.querySelector("label.signup");
+      const signupLink = document.querySelector("form .signup-link a");
+      signupBtn.onclick = (() => {
+         loginForm.style.marginLeft = "-50%";
+         loginText.style.marginLeft = "-50%";
+      });
+      loginBtn.onclick = (() => {
+         loginForm.style.marginLeft = "0%";
+         loginText.style.marginLeft = "0%";
+      });
+      signupLink.onclick = (() => {
+         signupBtn.click();
+         return false;
+      });
+
+   </script>
+</body>
+
+<script type="module">
+
+   // Import the functions you need from the SDKs you need
+   import { initializeApp } from "https://www.gstatic.com/firebasejs/9.10.0/firebase-app.js";
+   import { getAnalytics } from "https://www.gstatic.com/firebasejs/9.10.0/firebase-analytics.js";
+   import { getAuth, createUserWithEmailAndPassword, signInWithEmailAndPassword, signOut } from "https://www.gstatic.com/firebasejs/9.10.0/firebase-auth.js";
+   // TODO: Add SDKs for Firebase products that you want to use
+   // https://firebase.google.com/docs/web/setup#available-libraries
+
+   // Your web app's Firebase configuration
+   // For Firebase JS SDK v7.20.0 and later, measurementId is optional
+   const firebaseConfig = {
+      apiKey: "AIzaSyCbfalotqvX5zDOoqb-hSsUH7ACYBaNPt0",
+      authDomain: "pillpal-92efa.firebaseapp.com",
+      projectId: "pillpal-92efa",
+      storageBucket: "pillpal-92efa.appspot.com",
+      messagingSenderId: "505399699791",
+      appId: "1:505399699791:web:330b6fc23b0c75994dfd3a",
+      measurementId: "G-EVK2NY2MNT"
+   };
+
+   // Initialize Firebase
+   const app = initializeApp(firebaseConfig);
+   const analytics = getAnalytics(app);
+   const auth = getAuth();
+   console.log(app);
+
+
+   document.getElementById("registration_form").addEventListener("submit", function () {
+      event.preventDefault(); // prevent the form from submitting to the server
+      var email = document.getElementById("email").value;
+      var password = document.getElementById("password").value;
+      //For new registration
+      createUserWithEmailAndPassword(auth, email, password)
+         .then((userCredential) => {
+            // Signed in 
+            const user = userCredential.user;
+            console.log(user);
+            alert("Registration successfully!!");
+            // ...
+         })
+         .catch((error) => {
+            const errorCode = error.code;
+            const errorMessage = error.message;
+            // ..
+            console.log(errorMessage);
+            alert(error);
+         });
+   });
+
+
+   document.getElementById("login_form").addEventListener("submit", function () {
+      event.preventDefault(); // prevent the form from submitting to the server
+      var email = document.getElementById("login_email").value;
+      var password = document.getElementById("login_password").value;
+
+      signInWithEmailAndPassword(auth, email, password)
+         .then((userCredential) => {
+            // Signed in 
+            const user = userCredential.user;
+            console.log(user);
+            alert(user.email + " Login successfully!!!");
+            document.getElementById('logout').style.display = 'block';
+            // Redirect to the new page
+            window.location.href = "june_medicine_list_management.html";
+         })
+         .catch((error) => {
+            const errorCode = error.code;
+            const errorMessage = error.message;
+            console.log(errorMessage);
+            alert(errorMessage);
+         });
+   });
+
+
+
+   //----- Logout code start	  
+   document.getElementById("logout").addEventListener("click", function () {
+      signOut(auth).then(() => {
+         // Sign-out successful.
+         console.log('Sign-out successful.');
+         alert('Sign-out successful.');
+         document.getElementById('logout').style.display = 'none';
+      }).catch((error) => {
+         // An error happened.
+         console.log('An error happened.');
+      });
+   });
+      //----- End
+
+</script>
+
+
+</html>

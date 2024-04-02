@@ -1,0 +1,79 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+  <title>Expert Image</title>
+  <link rel="stylesheet" href="css/water.css">
+  <script src="https://www.gstatic.com/firebasejs/8.7.0/firebase-app.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/8.7.0/firebase-storage.js"></script>
+  <script>
+    // Initialize Firebase
+    var firebaseConfig = {
+      apiKey: "AIzaSyA9kaWQP1YBdIDkZcGYG2Pfu83dAlQ9upo",
+      authDomain: "pillpal-v2.firebaseapp.com",
+      projectId: "pillpal-v2",
+      storageBucket: "pillpal-v2.appspot.com",
+      messagingSenderId: "508414555682",
+      appId: "1:508414555682:web:354f6ff4cf6f5998e1fc7b",
+      measurementId: "G-FJGT9W4D2H"
+    };
+
+    firebase.initializeApp(firebaseConfig);
+    var storageRef = firebase.storage().ref();
+
+    function saveData() {
+      var inputa = document.getElementById("inputa").value;
+
+      // Save text inputs to Firestore
+ 
+      // Upload image to Firebase Storage and rename it with inputa
+      var file = document.getElementById("image").files[0];
+      var newFileName = inputa; // Rename the file
+
+      var imageRef = storageRef.child("ExpertImages/" + newFileName);
+
+      imageRef.put(file)
+        .then(function (snapshot) {
+          alert("Image uploaded successfully");
+          window.close(); // Close the window
+        })
+        .catch(function (error) {
+          console.error("Error uploading image: ", error);
+        });
+    }
+
+    document.addEventListener("DOMContentLoaded", function () {
+        // Retrieve the value of the input1Value query parameter
+        const urlParams = new URLSearchParams(window.location.search);
+        const input1Value = urlParams.get('input1Value');
+        console.log("input1Value:", input1Value);
+
+        // Set the value of the inputa element with the retrieved value
+        const inputaElement = document.getElementById('inputa');
+        inputaElement.value = input1Value;
+      });
+
+  </script>
+</head>
+
+<body>
+  <div style="max-width: 800px; margin: 0 auto;">
+
+    <h1 style="text-align: center;">Upload an Image of the Expert</h1>
+
+    <label for="inputa">Expert Email (ID):</label>
+    <input type="text" id="inputa" readonly>
+
+    <br>
+
+    <label for="image">Image:</label>
+    <input type="file" id="image">
+
+    <br>
+
+    <button onclick="saveData()">Save</button>
+  </div>
+
+</body>
+
+</html>

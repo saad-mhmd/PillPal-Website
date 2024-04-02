@@ -1,0 +1,142 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+  <meta charset="UTF-8">
+  <title>Customers Management</title>
+  <link rel="stylesheet" href="css/water.css">
+  <style>
+    h1 {
+      text-align: center;
+    }
+  </style>
+  <script src="https://www.gstatic.com/firebasejs/8.7.0/firebase-app.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/8.7.0/firebase-firestore.js"></script>
+  <script>
+    // Initialize Firebase
+    var firebaseConfig = {
+            apiKey: "AIzaSyA9kaWQP1YBdIDkZcGYG2Pfu83dAlQ9upo",
+            authDomain: "pillpal-v2.firebaseapp.com",
+            projectId: "pillpal-v2",
+            storageBucket: "pillpal-v2.appspot.com",
+            messagingSenderId: "508414555682",
+            appId: "1:508414555682:web:354f6ff4cf6f5998e1fc7b",
+            measurementId: "G-FJGT9W4D2H"
+        };
+
+    firebase.initializeApp(firebaseConfig);
+    var firestore = firebase.firestore();
+
+    function displayPatientsInfo() {
+      var tableBody = document.getElementById("table-body");
+
+      // Clear existing data from the table body
+      tableBody.innerHTML = "";
+
+      // Fetch data from Firestore
+      firestore.collection("PatientsInfo").get()
+        .then(function (querySnapshot) {
+          querySnapshot.forEach(function (doc) {
+            var patientData = doc.data();
+            var id = doc.id;
+            var dateOfBirth = patientData["Date of birth"];
+            var firstName = patientData["First Name"];
+            var lastName = patientData["Last Name"];
+            var phoneNumber = patientData["Phone Number"];
+            var address = patientData["address"];
+
+            // Create a new row for each patient's data
+            var newRow = document.createElement("tr");
+
+            // Create and append cells for each data field
+            var idCell = document.createElement("td");
+            idCell.textContent = id;
+            newRow.appendChild(idCell);
+
+            var dateOfBirthCell = document.createElement("td");
+            dateOfBirthCell.textContent = dateOfBirth;
+            newRow.appendChild(dateOfBirthCell);
+
+            var firstNameCell = document.createElement("td");
+            firstNameCell.textContent = firstName;
+            newRow.appendChild(firstNameCell);
+
+            var lastNameCell = document.createElement("td");
+            lastNameCell.textContent = lastName;
+            newRow.appendChild(lastNameCell);
+
+            var phoneNumberCell = document.createElement("td");
+            phoneNumberCell.textContent = phoneNumber;
+            newRow.appendChild(phoneNumberCell);
+
+            var addressCell = document.createElement("td");
+            addressCell.textContent = address;
+            newRow.appendChild(addressCell);
+
+            var deleteCell = document.createElement("td");
+            var deleteButton = document.createElement("button");
+            deleteButton.textContent = "Block";
+            deleteButton.addEventListener("click", function() {
+              deleteDocument(id);
+            });
+            deleteCell.appendChild(deleteButton);
+            newRow.appendChild(deleteCell);
+
+            // Append the new row to the table body
+            tableBody.appendChild(newRow);
+          });
+        })
+        .catch(function (error) {
+          console.error("Error fetching data: ", error);
+        });
+    }
+
+    function deleteDocument(documentId) {
+      // Delete document from "users" collection
+      firestore.collection("users").doc(documentId).delete()
+        .then(function() {
+          console.log("Document deleted from 'users' collection successfully.");
+          // Delete document from "PatientsInfo" collection
+          firestore.collection("PatientsInfo").doc(documentId).delete()
+            .then(function() {
+              console.log("Document deleted from 'PatientsInfo' collection successfully.");
+              displayPatientsInfo(); // Refresh the table after deletion
+            })
+            .catch(function(error) {
+              console.error("Error deleting document from 'PatientsInfo' collection: ", error);
+            });
+        })
+        .catch(function(error) {
+          console.error("Error deleting document from 'users' collection: ", error);
+        });
+    }
+
+    document.addEventListener("DOMContentLoaded", function () {
+      displayPatientsInfo();
+    });
+  </script>
+</head>
+
+<body>
+  <iframe src="header.html" frameborder="0" width="100%" height="50px"></iframe>
+  <div style="max-width: 800px; margin: 0 auto;">
+    <h1>Customers Management</h1>
+    <hr>
+    <table>
+      <thead>
+        <tr>
+          <th>ID</th>
+          <th>Date of Birth</th>
+          <th>First Name</th>
+          <th>Last Name</th>
+          <th>Phone Number</th>
+          <th>Address</th>
+          <th></th>
+        </tr>
+      </thead>
+      <tbody id="table-body"></tbody>
+    </table>
+  </div>
+</body>
+
+</html>

@@ -1,0 +1,143 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+  <meta charset="UTF-8">
+  <title>Pharmacists Management</title>
+  <link rel="stylesheet" href="css/water.css">
+  <style>
+    h1 {
+      text-align: center;
+    }
+  </style>
+  <script src="https://www.gstatic.com/firebasejs/8.7.0/firebase-app.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/8.7.0/firebase-firestore.js"></script>
+  <script>
+    // Initialize Firebase
+    var firebaseConfig = {
+            apiKey: "AIzaSyA9kaWQP1YBdIDkZcGYG2Pfu83dAlQ9upo",
+            authDomain: "pillpal-v2.firebaseapp.com",
+            projectId: "pillpal-v2",
+            storageBucket: "pillpal-v2.appspot.com",
+            messagingSenderId: "508414555682",
+            appId: "1:508414555682:web:354f6ff4cf6f5998e1fc7b",
+            measurementId: "G-FJGT9W4D2H"
+        };
+
+    firebase.initializeApp(firebaseConfig);
+    var firestore = firebase.firestore();
+
+    function displaypharmacyInfo() {
+      var tableBody = document.getElementById("table-body");
+
+      // Clear existing data from the table body
+      tableBody.innerHTML = "";
+
+      // Fetch data from Firestore
+      firestore.collection("pharmacyInfo").get()
+        .then(function (querySnapshot) {
+          querySnapshot.forEach(function (doc) {
+            var patientData = doc.data();
+            var id = doc.id;
+            var lattitude = patientData["lattitude"];
+            var longitude = patientData["longitude"];
+            var pharmaName = patientData["pharmaName"];
+            var phone = patientData["phone"];
+            var place = patientData["place"];
+
+            // Create a new row for each patient's data
+            var newRow = document.createElement("tr");
+
+            // Create and append cells for each data field
+            var idCell = document.createElement("td");
+            idCell.textContent = id;
+            newRow.appendChild(idCell);
+
+            var lastNameCell = document.createElement("td");
+            lastNameCell.textContent = pharmaName;
+            newRow.appendChild(lastNameCell);
+
+            var dateOfBirthCell = document.createElement("td");
+            dateOfBirthCell.textContent = lattitude;
+            newRow.appendChild(dateOfBirthCell);
+
+            var firstNameCell = document.createElement("td");
+            firstNameCell.textContent = longitude;
+            newRow.appendChild(firstNameCell);
+
+
+            var phoneNumberCell = document.createElement("td");
+            phoneNumberCell.textContent = phone;
+            newRow.appendChild(phoneNumberCell);
+
+            var addressCell = document.createElement("td");
+            addressCell.textContent = place;
+            newRow.appendChild(addressCell);
+
+            var deleteCell = document.createElement("td");
+            var deleteButton = document.createElement("button");
+            deleteButton.textContent = "Block";
+            deleteButton.addEventListener("click", function() {
+              deleteDocument(id);
+            });
+            deleteCell.appendChild(deleteButton);
+            newRow.appendChild(deleteCell);
+
+            // Append the new row to the table body
+            tableBody.appendChild(newRow);
+          });
+        })
+        .catch(function (error) {
+          console.error("Error fetching data: ", error);
+        });
+    }
+
+    function deleteDocument(documentId) {
+      // Delete document from "users" collection
+      firestore.collection("users").doc(documentId).delete()
+        .then(function() {
+          console.log("Document deleted from 'users' collection successfully.");
+          // Delete document from "pharmacyInfo" collection
+          firestore.collection("pharmacyInfo").doc(documentId).delete()
+            .then(function() {
+              console.log("Document deleted from 'pharmacyInfo' collection successfully.");
+              displaypharmacyInfo(); // Refresh the table after deletion
+            })
+            .catch(function(error) {
+              console.error("Error deleting document from pharmacyInfo' collection: ", error);
+            });
+        })
+        .catch(function(error) {
+          console.error("Error deleting document from 'users' collection: ", error);
+        });
+    }
+
+    document.addEventListener("DOMContentLoaded", function () {
+      displaypharmacyInfo();
+    });
+  </script>
+</head>
+
+<body>
+  <iframe src="header.html" frameborder="0" width="100%" height="50px"></iframe>
+  <div style="max-width: 800px; margin: 0 auto;">
+    <h1>Pharmacists Management</h1>
+    <hr>
+    <table>
+      <thead>
+        <tr>
+          <th>Email (ID)</th>
+          <th>Pharmacy Name</th>
+          <th>Longitude</th>
+          <th>Latitude</th>
+          <th>Phone Number</th>
+          <th>Place</th>
+          <th></th>
+        </tr>
+      </thead>
+      <tbody id="table-body"></tbody>
+    </table>
+  </div>
+</body>
+
+</html>

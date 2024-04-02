@@ -1,0 +1,304 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="css/water.css">
+    <style>
+        h1 {
+            text-align: center;
+        }
+
+        fieldset {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            width: 100%;
+            max-width: 600px;
+            /* Optional: Set max-width to limit the width of the fieldset */
+            margin: 0 auto;
+            /* Optional: Center the fieldset horizontally */
+        }
+
+        button {
+            flex: 1;
+        }
+
+        /* Overriding the table width */
+        table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        table th,
+        table td {
+            text-align: left;
+        }
+
+        label {
+            display: block;
+            /* margin-bottom: 5px; */
+        }
+
+        input {
+            width: 100%;
+            /* padding: 5px; */
+            /* border: 1px solid #ccc; */
+            /* border-radius: 3px; */
+            box-sizing: border-box;
+        }
+    </style>
+    <title>Experts</title>
+    <!-- Include the Firebase SDK -->
+    <script src="https://www.gstatic.com/firebasejs/9.19.1/firebase-app.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.19.1/firebase-storage.js"></script>
+</head>
+
+<body>
+    <iframe src="header.html" frameborder="0" width="100%" height="50px"></iframe>
+    <div style="max-width: 800px; margin: 0 auto;">
+        <h1>Experts</h1>
+        <hr>
+
+        <table>
+            <tbody>
+        
+                <tr>
+                    <td><label>Email (ID)</label> <input id="input1" type="text"></td>
+                    <td><label>Name</label> <input id="input2" type="text"></td>
+                </tr>
+                <tr>
+                </tr>
+                <tr>
+                    <td><label>Phone Number</label> <input id="input3" type="text"></td>
+                    <td><label>Place</label> <input id="input4" type="text"></td>
+                </tr>
+            </tbody>
+        </table>
+    
+        <br>
+
+        <fieldset>
+            <legend>Database Operations</legend>
+            <button id="Insbtn">INSERT</button>
+            <button id="Selbtn">SELECT</button>
+            <button id="Updbtn">UPDATE</button>
+            <button id="Delbtn">DELETE</button>
+            <button id="Allbtn" style="display: none;">Show All</button>
+        </fieldset>
+    
+        <br>
+    </div>
+
+    <div>
+        <table id="medicine-table">
+            <thead>
+                <tr>
+                    <th>Email</th>
+                    <th>Name</th>
+                    <th>Phone Number</th>
+                    <th>Place</th>
+                </tr>
+            </thead>
+            <tbody>
+            </tbody>
+        </table>
+    </div>
+
+
+    <!--------------------- IMPORT + CONFIGURATION --------------------->
+    <script type="module">
+        // Import the functions you need from the SDKs you need
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/9.19.1/firebase-app.js";
+        import { getAnalytics } from "https://www.gstatic.com/firebasejs/9.19.1/firebase-analytics.js";
+        // TODO: Add SDKs for Firebase products that you want to use
+        // https://firebase.google.com/docs/web/setup#available-libraries
+
+        // Your web app's Firebase configuration
+        // For Firebase JS SDK v7.20.0 and later, measurementId is optional
+        const firebaseConfig = {
+            apiKey: "AIzaSyA9kaWQP1YBdIDkZcGYG2Pfu83dAlQ9upo",
+            authDomain: "pillpal-v2.firebaseapp.com",
+            projectId: "pillpal-v2",
+            storageBucket: "pillpal-v2.appspot.com",
+            messagingSenderId: "508414555682",
+            appId: "1:508414555682:web:354f6ff4cf6f5998e1fc7b",
+            measurementId: "G-FJGT9W4D2H"
+        };
+
+        // Initialize Firebase
+        const app = initializeApp(firebaseConfig);
+        const analytics = getAnalytics(app);
+
+        import {
+            getFirestore, doc, getDoc, setDoc, collection, addDoc, updateDoc, deleteDoc, deleteField, getDocs
+        }
+            from "https://www.gstatic.com/firebasejs/9.19.1/firebase-firestore.js"
+
+        const db = getFirestore();
+
+        // --------------------- References ---------------------
+
+        let Input1 = document.getElementById("input1");
+        let Input2 = document.getElementById("input2");
+        let Input3 = document.getElementById("input3");
+        let Input4 = document.getElementById("input4");
+
+        let insBtn = document.getElementById("Insbtn");
+        let selBtn = document.getElementById("Selbtn");
+        let updBtn = document.getElementById("Updbtn");
+        let delBtn = document.getElementById("Delbtn");
+
+        let allBtn = document.getElementById("Allbtn")
+
+
+        // --------------------- Adding Document (Custom ID & Check if Exists) ---------------------
+
+        async function AddDocument_CustomID() {
+            const input1 = Input1.value.trim();
+            const input2 = Input2.value.trim();
+            const input3 = Input3.value.trim();
+            const input4 = Input4.value.trim();
+            
+
+            if (!input1 || !input2 || !input3 || !input4) {
+                alert("Please fill all the fields.");
+                return;
+            }
+
+            const ref = doc(db, "experts", input1);
+
+            const docSnap = await getDoc(ref);
+
+            if (docSnap.exists()) {
+                alert("A document with this Email (ID) already exists.");
+            } else {
+                await setDoc(ref, {
+                    Email: input1,
+                    Name: input2,
+                    PhoneNumber: input3,
+                    Place: input4,
+                })
+                    .then(() => {
+                        alert("Data added successfully.");
+                        console.log("input1Value:", input1);
+                        //send code to the image page
+                        const url = "expert_image.html?input1Value=" + encodeURIComponent(input1);
+                        window.open(url, "_blank");
+                        GetAllDocuments();
+                    })
+                    .catch((error) => {
+                        alert("Unsuccessful operation, error: " + error);
+                    });
+            }
+        }
+
+        // --------------------- Getting Document ---------------------
+
+        async function GetADocument() {
+            var ref = doc(db, "experts", Input1.value);
+            const docSnap = await getDoc(ref);
+
+            if (docSnap.exists()) {
+                Input2.value = docSnap.data().Name;
+                Input3.value = docSnap.data().PhoneNumber;
+                Input4.value = docSnap.data().Place;
+            }
+            else {
+                alert("No such Document")
+            }
+        }
+
+        // --------------------- Update Document Data ---------------------
+
+        async function UpdateFieldsInADocument() {
+
+            const input1 = Input1.value.trim();
+            const input2 = Input2.value.trim();
+            const input3 = Input3.value.trim();
+            const input4 = Input4.value.trim();
+
+            if (!input1 || !input2 || !input3 || !input4) {
+                alert("Please provide all data to update the medicine info.");
+                return;
+            }
+
+            var ref = doc(db, "experts", Input1.value);
+
+            await updateDoc(
+                ref, {
+                Name: Input2.value,
+                PhoneNumber: Input3.value,
+                Place: Input4.value,
+            })
+                .then(() => {
+                    alert("data updated successfully");
+                    GetAllDocuments();
+                })
+                .catch((error) => {
+                    alert("Unsuccessful operation, error: " + error);
+                });
+        }
+
+        // --------------------- Deleting Document ---------------------
+
+        async function DeleteDocument() {
+            var ref = doc(db, "experts", Input1.value);
+            const docSnap = await getDoc(ref);
+
+            if (!docSnap.exists()) {
+                alert("Document doesn't exist");
+                return;
+            }
+            await deleteDoc(ref)
+                .then(() => {
+                    alert("data deleted successfully");
+                    GetAllDocuments();
+                })
+                .catch((error) => {
+                    alert("Unsuccessful operation, error: " + error);
+                });
+        }
+
+        // --------------------- Get All Documents ---------------------
+
+        async function GetAllDocuments() {
+            const querySnapshot = await getDocs(collection(db, "experts"));
+
+            const tableBody = document.querySelector("#medicine-table tbody");
+
+            // Remove existing rows from the table
+            while (tableBody.firstChild) {
+                tableBody.removeChild(tableBody.firstChild);
+            }
+
+            querySnapshot.forEach((doc) => {
+                const data = doc.data();
+                const row = document.createElement("tr");
+                row.innerHTML = `
+                                <td>${data.Email}</td>
+                                <td>${data.Name}</td>
+                                <td>${data.PhoneNumber}</td>
+                                <td>${data.Place}</td>
+                                `;
+                tableBody.appendChild(row);
+            });
+        }
+
+        // --------------------- Assign Events To Btns ---------------------
+
+        insBtn.addEventListener("click", AddDocument_CustomID);
+        selBtn.addEventListener("click", GetADocument);
+        updBtn.addEventListener("click", UpdateFieldsInADocument);
+        delBtn.addEventListener("click", DeleteDocument);
+
+        allBtn.addEventListener("click", GetAllDocuments);
+        window.addEventListener("load", GetAllDocuments);
+
+    </script>
+
+</body>
+
+</html>
